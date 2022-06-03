@@ -14,16 +14,16 @@
   - xxx_list：数据信息
   - length：数据长度
 
-- code定义：
-    200: Success
-    400: Unknown error
-    401: Not authorized
-    402: Wrong password
-    403: Forbidden
-    404: Not found
-    600: Some key cannot be empty
-    601: Some key not exist
-    602: SQL execution error
-    603: Some key already exist
+- code定义：  
+    200: Success  
+    400: Unknown error  
+    401: Not authorized  
+    402: Wrong password  
+    403: Forbidden  
+    404: Not found  
+    600: Some key cannot be empty  
+    601: Some key not exist  
+    602: SQL execution error  
+    603: Some key already exist  
     604: Action not allowed
 
