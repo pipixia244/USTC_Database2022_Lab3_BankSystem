@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="X-UA-Compatible" content="ie=edge">
+      <title>Sakuraの銀行</title>
+      
+      <link rel="stylesheet" href="../style.css">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+      <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+      <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+      <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+      <!-- <link rel="stylesheet" href="../style.css">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+      <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+      <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+      <script src="https://code.jquery.com/jquery-3.3.1.js"></script> -->
+    </head>
+    <body>
+              <div class="wrapper">
+         <header>
+            <nav>
+               <div class="menu-icon">
+                  <i class="fa fa-bars fa-2x"></i>
+               </div>
+               <div class="logo">
+                  <a style="color: white;text-decoration:none;" href="/">Sakuraの銀行</a> 
+               </div>
+               <div class="menu">
+                  <ul>
+                     <li><a href="/user">用户</a></li>
+                     <li><a href="/client">客户</a></li>
+                     <li><a href="/account">银行账户</a></li>
+                     <li><a href="/department">Department</a></li>
+                     <li><a style="text-decoration:none; color:black; border-width: 8px ; padding: 12px; text-align: center; background-color: rgba(231, 255, 10, 0.8);border-radius: 10px;" href="/bank">银行</a></li>
+                     <li><a href="/loan">贷款</a></li>
+                     <li><a href="/employ">雇员</a></li>
+                     <li><button class="btn btn-info"><a style="color:yellow" href="/login">登录</a></button></li>
+                  </ul>
+               </div>
+            </nav>
+         </header>
+        </div>
+        <script>
+             $(document).ready(function() {
+                $(".menu-icon").on("click", function() {
+                      $("nav ul").toggleClass("showing");
+                });
+          });
+    
+          // Scrolling Effect
+            $('nav').addClass("black");
+        </script>
+
+        <script>
+         var URL = "https://dbapi.srpr.cc";
+         $.ajax({
+            url: URL + "/api/v1/get/list_bank",
+            type: "GET",
+            dataType: "json",
+            success: function(data) {
+                console.log(JSON.stringify(data))
+                // 显示在线离线人数
+                //$("#StatusCode").html(data.code);
+                if(data.code == 200)
+                {
+                    $("#ErrorLog").html("No error.");
+                    $("#info1").removeClass("alert-info");
+                    $("#info1").addClass("alert-success");
+                }
+                else
+                {
+                    $("#ErrorLog").html(data.error);
+                }
+                $(".total_cnt").html(data.length);
+                // 各部门人数显示
+                var data_list = data.bank_list;
+                console.log(data_list);
+                var html = '<table class="table table-bordered table-hover"><thead><tr><th>银行</th><th>所在城市</th><th>Assets</th></tr></thead>';
+                for(var client in data_list) {
+                    var client_id = data_list[client]['Bank_Name'];
+                    var account_id = data_list[client]['City'];
+                    var visited_date = data_list[client]['Assets'];
+                    //console.log(client_id_data);
+                    html += '<tr><td>' + client_id + '  </td><td>' +
+                       account_id + '  </td><td>' +
+                       visited_date + '  </td>';
+                }
+                html += '</table>'
+                $(".list_area").append(html);
+            }
+        })
+        </script>
+
+      <div class="container" style="min-width: 1200px;">
+     <h1>
+      银行
+      </h1>
+      <div class="alert alert-info alert-dismissable" id="info2">
+          <button type="button" class="close" data-dismiss="alert"
+                  aria-hidden="true">
+              &times;
+          </button>
+          日志信息：<a id="ErrorLog"></a>
+      </div>
+      
+      <h3>
+       银行列表
+    </h3>
+    总数：<b class="total_cnt"></b>
+    <table class="table table-hover table-bordered" >
+      <tbody>
+       <!-- BEGIN list -->
+       <div class="list_area">
+       </div>
+       
+       </tbody>
+   </table>

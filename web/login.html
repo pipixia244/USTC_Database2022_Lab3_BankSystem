@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="X-UA-Compatible" content="ie=edge">
+      <title>Sakuraの銀行</title>
+      <link rel="stylesheet" href="style.css">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+      <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+      <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+      <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    </head>
+    <body>
+              <div class="wrapper">
+         <header>
+            <nav>
+               <div class="menu-icon">
+                  <i class="fa fa-bars fa-2x"></i>
+               </div>
+               <div class="logo">
+                  LOGO
+               </div>
+               <div class="menu">
+                  <ul>
+                     <li><a href="/user">用户</a></li>
+                     <li><a href="/client">客户</a></li>
+                     <li><a href="/account">银行账户</a></li>
+                     <li><a href="/department">Department</a></li>
+                     <li><a href="/bank">银行</a></li>
+                     <li><a href="/loan">贷款</a></li>
+                     <li><a href="/employ">雇员</a></li>
+                  </ul>
+               </div>
+            </nav>
+         </header>
+        </div>
+        <script>
+             $(document).ready(function() {
+                $(".menu-icon").on("click", function() {
+                      $("nav ul").toggleClass("showing");
+                });
+          });
+    
+          // Scrolling Effect
+            $('nav').addClass("black");
+          $(window).on("scroll", function() {
+                if($(window).scrollTop()) {
+                      $('nav').addClass('black');
+                }
+    
+                else {
+                      $('nav').removeClass('black');
+                }
+          })
+        </script>
+        <!-- 登陆开始 -->
+        <h1 class="text-center">登录</h1>
+        <div id="login_area"></div>
+        <form class="form-horizontal" role="form">
+        <div class="form-group">
+            <label for="firstname" class="col-sm-2 control-label">用户名：</label>
+            <div class="col-sm-10">
+            <input class="form-control" id="LoginTable" type="username" name="username" placeholder="Username">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="lastname" class="col-sm-2 control-label">密码：</label>
+            <div class="col-sm-10">
+            <input class="form-control" id="PasswdTable" type="password" name="hashkey" placeholder="Password">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+            <div class="checkbox">
+                <label>
+                <input type="checkbox">记住我
+                </label>
+            </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+            <button type="button" class="btn btn-default" onclick="post_url();">登录</button>
+            </div>
+        </div>
+        </form>
+        <!-- 登录结束 -->
+        <script>
+            function post_url()
+            {
+                var httpRequest = new XMLHttpRequest();
+                var str1 = document.getElementById("LoginTable").value
+                console.log(str1)
+                var str2 = document.getElementById("PasswdTable").value
+                console.log(str2)
+                var str3 = 'https://dbapi.srpr.cc/api/v1/get/login?username='+str1+'&hashkey='+str2
+                console.log(str3)
+                httpRequest.open('GET', str3, true);
+                //httpRequest.setRequestHeader("Content-type","application/json");
+                httpRequest.send();
+                //console.log(httpRequest)
+                httpRequest.onreadystatechange = function ()
+                {
+                    if (httpRequest.readyState == 4 && httpRequest.status == 200) {
+                        var json = httpRequest.responseText;
+                        var json_loads = eval('('+json+')');
+                        html = '';
+                        if(json_loads.error == "")
+                        {
+                            html += '<div class="alert alert-success alert-dismissable"><button type="button" class="close" data-dismiss="alert" aria-hidden="true"> &times; </button> 登陆成功，2s后跳转到主页面。</div>';
+                            var login_txt = document.getElementById("login_area");
+                            login_txt.innerHTML = html;
+                            setTimeout(`window.location = "/";`, 2000);
+                            //alert("登陆成功，即将跳转到主页面。");
+                        }
+                        else
+                        {
+                            html += '<div class="alert alert-danger alert-dismissable"> <button type="button" class="close" data-dismiss="alert" aria-hidden="true"> &times; </button> 登陆失败，状态码：' + json_loads.code + ' ，错误信息：' + json_loads.error + ' </div>';
+                            var login_txt = document.getElementById("login_area");
+                            login_txt.innerHTML = html;
+                            
+                        }
+                    }
+                };
+            }
+        </script>

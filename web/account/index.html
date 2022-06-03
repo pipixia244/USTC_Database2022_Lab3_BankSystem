@@ -1,0 +1,781 @@
+<!doctype html>
+<html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="X-UA-Compatible" content="ie=edge">
+      <title>Sakuraの銀行</title>
+      <link rel="stylesheet" href="../style.css">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+      <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+      <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+      <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+      <link href="https://cdn.bootcss.com/bootstrap-select/1.12.4/css/bootstrap-select.min.css" rel="stylesheet">
+      <!-- <link rel="stylesheet" href="../style.css">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+      <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+      <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+      <script src="https://code.jquery.com/jquery-3.3.1.js"></script> -->
+    </head>
+    <body>
+              <div class="wrapper">
+         <header>
+            <nav>
+               <div class="menu-icon">
+                  <i class="fa fa-bars fa-2x"></i>
+               </div>
+               <div class="logo">
+                  <a style="color: white;text-decoration:none;" href="/">Sakuraの銀行</a> 
+               </div>
+               <div class="menu">
+                  <ul>
+                     <li><a href="/user">用户</a></li>
+                     <li><a href="/client">客户</a></li>
+                     <li><a style="text-decoration:none; color:black; border-width: 8px ; padding: 12px; text-align: center; background-color: rgba(231, 255, 10, 0.8);border-radius: 10px;" href="/account">银行账户</a></li>
+                     <li><a href="/department">Department</a></li>
+                     <li><a href="/bank">银行</a></li>
+                     <li><a href="/loan">贷款</a></li>
+                     <li><a href="/employ">雇员</a></li>
+                     <li><button class="btn btn-info"><a style="color:yellow" href="/login">登录</a></button></li>
+                  </ul>
+               </div>
+            </nav>
+         </header>
+        </div>
+        <script>
+             $(document).ready(function() {
+                $(".menu-icon").on("click", function() {
+                      $("nav ul").toggleClass("showing");
+                });
+          });
+    
+          // Scrolling Effect
+            $('nav').addClass("black");
+        </script>
+        <script>
+         var URL = "https://dbapi.srpr.cc";
+         // 进入页面即加载
+         $.ajax(
+            {
+               url: URL + "/api/v1/get/list_account",
+               type: "GET",
+               dataType: "json",
+               success: function(data) {
+                  //console.log(JSON.stringify(data))
+                  // 显示在线离线人数
+                  //$("#StatusCode").html(data.code);
+                  if(data.code == 200)
+                  {
+                      $("#ErrorLog").html("No error.");
+                      $("#info1").removeClass("alert-info");
+                      $("#info1").addClass("alert-success");
+                  }
+                  else
+                  {
+                      $("#ErrorLog").html(data.error);
+                  }
+                  $(".total_cnt_account").html(data.length);
+                  // 各部门人数显示
+                  var data_list = data.account_list;
+                  console.log(data_list);
+                  var html = '<table class="table table-bordered table-hover"><thead><tr><th>账户ID</th><th>银行</th><th>存款</th><th>开户时间</th><th>操作</th></tr></thead>';
+                  for(var client in data_list) {
+                      var account_id = data_list[client]['Account_ID'];
+                      var opening_date = data_list[client]['Opening_Date'];
+                      var bank_name = data_list[client]['Bank_Name'];
+                      var balance = data_list[client]['Balance'];
+                      //console.log(client_id_data);
+                      html += '<tr><td>' + account_id + '  </td><td>' +
+                         bank_name + '  </td><td>' +
+                         balance + '  </td><td>' +
+                         opening_date + '  </td><td>' + 
+                         '<button type="button" class="btn btn-info" data-toggle="modal" onclick="return edit_fill(' + account_id + ", '" + bank_name + "', '" + balance + "', '" + opening_date + "'" + ');"' +
+                         'data-target="#editUserModal">编辑</button> &nbsp;&nbsp; <button type="button" class="btn btn-danger" onclick="return delete_info('+ account_id + ')">删除</button> </td>';
+                  }
+                  html += '</table>'
+                  $(".list_area_2").append(html);
+              }
+            }
+         )
+
+         $.ajax({
+             url: URL + "/api/v1/get/list_own",
+             type: "GET",
+             dataType: "json",
+             success: function(data) {
+                 console.log(JSON.stringify(data))
+                 // 显示在线离线人数
+                 //$("#StatusCode").html(data.code);
+                 if(data.code == 200)
+                 {
+                     $("#ErrorLog").html("No error.");
+                     $("#info1").removeClass("alert-info");
+                     $("#info1").addClass("alert-success");
+                 }
+                 else
+                 {
+                     $("#ErrorLog").html(data.error);
+                 }
+                 $(".total_cnt").html(data.length);
+                 // 各部门人数显示
+                 var data_list = data.own_list;
+                 console.log(data_list);
+                 var html = '<table class="table table-bordered table-hover"><thead><tr><th>客户ID</th><th>账户ID</th><th>浏览时间</th></tr></thead>';
+                 for(var client in data_list) {
+                     var client_id = data_list[client]['Client_ID'];
+                     var visited_date = data_list[client]['Visited_Date'];
+                     var account_id = data_list[client]['Account_ID'];
+                     //console.log(client_id_data);
+                     html += '<tr><td>' + client_id + '  </td><td>' +
+                        account_id + '  </td><td>' +
+                        visited_date + '  </td> ';
+                 }
+                 html += '</table>'
+                 $(".list_area").append(html);
+             }
+         })
+     
+         $.ajax({
+            url: URL + "/api/v1/get/list_saving",
+            type: "GET",
+            dataType: "json",
+            success: function(data) {
+                console.log(JSON.stringify(data))
+                // 显示在线离线人数
+                //$("#StatusCode").html(data.code);
+                if(data.code == 200)
+                {
+                    $("#ErrorLog").html("No error.");
+                    $("#info1").removeClass("alert-info");
+                    $("#info1").addClass("alert-success");
+                }
+                else
+                {
+                    $("#ErrorLog").html(data.error);
+                }
+                $(".total_cnt_saving").html(data.length);
+                // 各部门人数显示
+                var data_list = data.saving_list;
+                console.log(data_list);
+                var html = '<table class="table table-bordered table-hover"><thead><tr><th>账户ID</th><th>利率</th><th>币种</th></tr></thead>';
+                for(var client in data_list) {
+                    var client_id = data_list[client]['Account_ID'];
+                    var visited_date = data_list[client]['Currency_Type'];
+                    var account_id = data_list[client]['Interest_Rate'];
+                    //console.log(client_id_data);
+                    html += '<tr><td>' + client_id + '  </td><td>' +
+                       account_id + '  </td><td>' +
+                       visited_date + '  </td> ';
+                }
+                html += '</table>'
+                $(".list_area_3").append(html);
+            }
+        })
+        $.ajax({
+            url: URL + "/api/v1/get/list_checking",
+            type: "GET",
+            dataType: "json",
+            success: function(data) {
+                console.log(JSON.stringify(data))
+                // 显示在线离线人数
+                //$("#StatusCode").html(data.code);
+                if(data.code == 200)
+                {
+                    $("#ErrorLog").html("No error.");
+                    $("#info1").removeClass("alert-info");
+                    $("#info1").addClass("alert-success");
+                }
+                else
+                {
+                    $("#ErrorLog").html(data.error);
+                }
+                $(".total_cnt_checking").html(data.length);
+                // 各部门人数显示
+                var data_list = data.checking_list;
+                console.log(data_list);
+                var html = '<table class="table table-bordered table-hover"><thead><tr><th>账户ID</th><th>欠款</th></tr></thead>';
+                for(var client in data_list) {
+                    var client_id = data_list[client]['Account_ID'];
+                    var visited_date = data_list[client]['Overdraft'];
+                    //console.log(client_id_data);
+                    html += '<tr><td>' + client_id + '  </td><td>' +
+                       visited_date + '  </td> ';
+                }
+                html += '</table>'
+                $(".list_area_4").append(html);
+            }
+        })
+         function search_info(id, name, balance)
+         {
+             $.ajax(
+                 {
+                     url: URL + "/api/v1/get/search_account?account_id=" + id + "&bank_name=" + name +
+                           "&balance=" + balance,
+                     type: "get",
+                     beforeSend:function()
+                     {
+                             $("#tip").html("<span style='color:blue'>正在处理...</span>");
+                             return true;
+                     },
+                     success:function(data)
+                     {
+                         if(data.code == 200)
+                         {
+                             //alert('操作成功');
+                             //$("#tip").html("<span style='color:blueviolet'></span>");
+                             $("#ErrorLog").html("No error, code: " + data.code);
+                             $(".total_cnt").html(data.length);
+                             // 各部门人数显示
+                             var data_list = data.account_list;
+                             console.log(data_list);
+                             var html = '<table class="table table-bordered table-hover"><thead><tr><th>账户ID</th><th>银行</th><th>存款</th><th>开户时间</th></tr></thead>';
+                             for(var client in data_list) {
+                                 var account_id = data_list[client]['Account_ID'];
+                                 var bank_name = data_list[client]['Bank_Name'];
+                                 var balance = data_list[client]['Balance'];
+                                 var open_time = data_list[client]['Opening_Date'];
+                                 html += '<tr><td>' + account_id + '  </td><td>' +
+                                     bank_name + '  </td><td>' + balance + '  </td><td>' + 
+                                     balance + '  </td>' + '<td><button type="button" class="btn btn-info" data-toggle="modal" onclick="return edit_fill(' + account_id + ", '" + bank_name + "', '" + balance + "')"+'" data-target="#editUserModal">编辑</button> &nbsp;&nbsp; <button type="button" class="btn btn-danger" onclick="return delete_info('+ account_id + ')">删除</button> </td>';
+                                 }
+                             html += '</table>'
+                             $(".list_area_2").empty();
+                             $(".list_area_2").append(html);
+                         }
+                         else
+                         {
+                             $("#ErrorLog").html("Error: "+data.error+", code: "+data.code);
+                             $("#tip").html("<span style='color:red'>失败，请重试</span>");
+                         }
+                     },
+                 }
+             )
+         }
+     
+         function add_fill(id, name, balance)
+         {
+             $("#add_client_id").val(id);
+             $("#add_client_name").val(name);
+             $("#add_client_tel").val(balance);
+         }
+     
+         function edit_fill(client_id, client_name, client_tel, client_addr, contact_name, contact_email, contact_tel, relation)
+         {
+             $("#edit_client_id").val(client_id);
+             $("#edit_client_name").val(client_name);
+             $("#edit_client_tel").val(client_tel);
+             $("#edit_client_date").val(client_addr);
+             $("#edit_contact_name").val(contact_name);
+             $("#edit_contact_email").val(contact_email);
+             $("#edit_contact_tel").val(contact_tel);
+             $("#edit_relation").val(relation);
+             $('#edit_client_id').attr("readonly","readonly");
+             $('#edit_client_name').attr("readonly","readonly");
+             //$('#edit_client_tel').attr("readonly","readonly");
+             $('#edit_client_date').attr("readonly","readonly");
+             $('#edit_client_addr').attr("readonly","readonly");
+
+             $.ajax({
+                url: URL + "/api/v1/get/search_own?account_id=" + client_id,
+                type: "GET",
+                dataType: "json",
+                success: function(data) {
+                    console.log(JSON.stringify(data))
+                    //$("#StatusCode").html(data.code);
+                    if(data.code == 200)
+                    {
+                        var data_list = data.own_list;
+                        var str = '';
+                        for(var client in data_list)
+                        {
+                            str += data_list[client]["Client_ID"] + ', '
+                        }
+                        $("#edit_client_addr").val(str);
+                    }
+                    else
+                    {
+                        $("#ErrorLog").html("Error: "+data.error+", code: "+data.code);
+                        alert("Error: "+data.error+", code: "+data.code);
+                    }
+                    $(".total_cnt").html(data.length);
+                    // 各部门人数显示
+                    var data_list = data.own_list;
+                    console.log(data_list);
+                    var html = '<table class="table table-bordered table-hover"><thead><tr><th>客户ID</th><th>浏览时间</th><th>账户ID</th><th>操作</th></tr></thead>';
+                    for(var client in data_list) {
+                        var client_id = data_list[client]['Client_ID'];
+                        var visited_date = data_list[client]['Visited_Date'];
+                        var account_id = data_list[client]['Account_ID'];
+                        //console.log(client_id_data);
+                        html += '<tr><td>' + client_id + '  </td><td>' +
+                           visited_date + '  </td><td>' +
+                           account_id + '  </td> ' + 
+                           '<td><button type="button" class="btn btn-info" data-toggle="modal" onclick="return edit_fill();"' +
+                           'data-target="#editUserModal">编辑</button> &nbsp;&nbsp; <button type="button" class="btn btn-danger" onclick="return delete_info('+ account_id + ')">删除</button> </td>';
+                    }
+                    html += '</table>'
+                    $(".list_area").append(html);
+                }
+            })
+        
+         }
+     
+         function add_info()
+         {
+             var client_id = document.getElementById("add_client_id").value;
+             var client_name = document.getElementById("add_client_name").value;
+             var client_tel = document.getElementById("add_client_tel").value;
+             var client_addr = document.getElementById("add_client_addr").value;
+             var contact_name = document.getElementById("add_contact_name").value;
+             var contact_email = document.getElementById("add_contact_email").value;
+             var contact_tel = document.getElementById("add_contact_tel").value;
+             var type = document.getElementById("add_client_type").value;
+             var opening_date = document.getElementById("add_client_date").value;
+             
+             if(!client_id || !client_name || !client_tel || !client_addr)
+             {
+                 alert("客户ID, 账户ID, 银行和存款不能为空！");
+                 return false;
+             }
+     
+             $.ajax(
+                 {
+                     url: URL + "/api/v1/post/add_account",
+                     data: {"account_id":client_id, "bank_name":client_name, "balance":client_tel, "client_id":client_addr, "overdraft":contact_name, "interest_rate":contact_email, "currency_type":contact_tel, "type":type, "opening_date":opening_date},
+                     type: "post",
+                     beforeSend:function()
+                     {
+                         $("#tip").html("<span style='color:blue'>正在处理...</span>");
+                         return true;
+                     },
+                     success:function(data)
+                     {
+                         if(data.code == 200)
+                         {
+                             $("#ErrorLog").html("成功，将在2s后刷新。" + data.code);
+                             //alert('操作成功');
+                             $("#tip").html("<span style='color:blueviolet'>添加成功！页面将在2s后跳转。</span>");
+     
+                             // document.location.href='world_system_notice.php'
+                             setTimeout(`window.location = "/account";`, 2000);
+                             
+                         }
+                         else
+                         {
+                             alert(data.error)
+                             $("#ErrorLog").html("Error: "+data.error+", code: "+data.code);
+                             $("#tip").html("<span style='color:red'>出错，错误信息：" + data.error + "，状态码：" + data.code + "</span>");
+                             //alert('操作失败');
+                         }
+                     },
+     
+                 }
+             )
+         }
+     
+         function edit_info()
+         {
+            var client_id = document.getElementById("edit_client_id").value;
+            var client_name = document.getElementById("edit_client_name").value;
+            var client_tel = document.getElementById("edit_client_tel").value;
+            var client_addr = document.getElementById("edit_client_addr").value;
+            var contact_name = document.getElementById("edit_contact_name").value;
+            var contact_email = document.getElementById("edit_contact_email").value;
+            var contact_tel = document.getElementById("edit_contact_tel").value;
+            var type = document.getElementById("edit_client_type").value;
+            var opening_date = document.getElementById("edit_client_date").value;
+     
+             $.ajax(
+                 {
+                     url: URL + "/api/v1/post/edit_account",
+                     data: {"account_id":client_id, "overdraft":contact_name, "interest_rate":contact_email, "currency_type":contact_tel},
+                     type: "post",
+                     beforeSend:function()
+                     {
+                         $("#tip2").html("<span style='color:blue'>正在处理...</span>");
+                         return true;
+                     },
+                     success:function(data)
+                     {
+                         if(data.code == 200)
+                         {
+                             $("#ErrorLog").html("成功，将在2s后刷新。" + data.code);
+                             //alert('操作成功');
+                             $("#tip2").html("<span style='color:blueviolet'>添加成功！页面将在2s后跳转。</span>");
+     
+                             // document.location.href='world_system_notice.php'
+                             setTimeout(`window.location = "/account";`, 2000);
+                             
+                         }
+                         else
+                         {
+                             alert(data.error)
+                             $("#ErrorLog").html("Error: "+data.error+", code: "+data.code);
+                             $("#tip2").html("<span style='color:red'>出错，错误信息：" + data.error + "，状态码：" + data.code + "</span>");
+                             //alert('操作失败');
+                         }
+                     },
+     
+                 }
+             )
+         }
+     
+         function delete_info(id)
+         {
+             if(!id)
+             {
+                 alert("Cannot be empty.");
+                 return false;
+             }
+     
+             var client_id = id;
+             var is_success = 0;
+             $.ajax(
+                 {
+                     url: URL + "/api/v1/post/delete_account",
+                     data: {"account_id":client_id},
+                     type: "post",
+                     beforeSend:function()
+                     {
+                         //$("#tip").html("<span style='color:blue'>正在处理...</span>");
+                         return true;
+                     },
+                     success:function(data)
+                     {
+                         console.log(data.error);
+                         if(data.code == 200)
+                         {
+                             $("#ErrorLog").html("成功！将在2s后刷新。" + data.code);
+                             alert('删除成功！');
+                             $("#tip").html("<span style='color:blueviolet'>删除成功！</span>");
+                             is_success = 1;
+                             // document.location.href='world_system_notice.php'
+                             setTimeout(`window.location = "/account";`, 300);
+                         }
+                         else
+                         {
+                             alert("Error: "+data.error+", code: "+data.code);
+                             $("#ErrorLog").html("Error: "+data.error+", code: "+data.code);
+                             $("#tip").html("<span style='color:red'>出错，错误信息：" + data.error + "，状态码：" + data.code + "</span>");
+                             //alert('操作失败');
+                         }
+                     },
+                 
+                 }
+             )
+         }
+         $(function () {
+             $('#addUserModal').on('hide.bs.modal', function ()
+             {
+                 // 关闭时清空edit状态为add
+                 //$("#act").val("add");
+                 location.reload();
+             })
+         });
+         $(function () {
+             $('#editUserModal').on('hide.bs.modal', function ()
+             {
+                 // 关闭时清空edit状态为add
+                 //$("#act").val("add");
+                 location.reload();
+             })
+         });
+     </script>
+     <div class="container" style="min-width: 1200px;">
+     
+     <h1>
+     账户
+     </h1>
+     <div class="alert alert-info alert-dismissable" id="info2">
+         <button type="button" class="close" data-dismiss="alert"
+                 aria-hidden="true">
+             &times;
+         </button>
+         日志信息：<a id="ErrorLog"></a>
+     </div>
+     
+     <h3>
+      银行账户管理
+   </h3>
+   总数：<b class="total_cnt_account"></b>
+   <table class="table table-bordered">
+      <tbody>
+      <tr>
+         <td>账户ID：<input type="text" id="add_user_id" value=""></td>
+         <td>银行：<input type="text" id="add_user_name" value=""></td>
+         <td>存款：<input type="text" id="add_user_balance" value=""></td>
+          <td style="text-align:center;">   <!-- 按钮触发模态框 -->
+              <button class="btn btn-primary btn-sm" style data-toggle="modal"  data-target="#addUserModal" onclick='add_fill(document.getElementById("add_user_id").value,document.getElementById("add_user_name").value,document.getElementById("add_user_balance").value)'>
+                  添加用户
+              </button>
+          </td>
+      </tr>
+      <tr>
+          <td>账户ID：<input type="text" id="search_user_id" value=""></td>
+          <td>银行：<input type="text" id="search_user_name" value=""></td>
+          <td>存款：<input type="text" id="search_user_balance" value=""></td>
+          <td colspan="10" style=" text-align: center; padding: 10px; border: none">
+              <input type="submit" onclick='search_info(document.getElementById("search_user_id").value,document.getElementById("search_user_name").value,document.getElementById("search_user_balance").value)' class="btn btn-default" value="搜索" />&nbsp;&nbsp;
+              <!-- <a href="extreme_award_user_list.php">默认</a> -->
+          </td>
+      </tr>
+      </tbody>
+  </table>
+
+   <table class="table table-hover table-bordered" >
+      <tbody>
+       <div class="list_area_2">
+       </div>
+   
+       <!-- END list -->
+   
+   
+       </tbody>
+   </table>
+   <h3>
+      所属关系
+   </h3>
+     
+      总数：<b class="total_cnt"></b>
+     <table class="table table-hover table-bordered" >
+        <tbody>
+         <!-- BEGIN list -->
+         <div class="list_area">
+         </div>
+         
+         </tbody>
+     </table>
+    
+   <h3>
+    储蓄账户
+    </h3>
+   
+    总数：<b class="total_cnt_saving"></b>
+   <table class="table table-hover table-bordered" >
+      <tbody>
+       <!-- BEGIN list -->
+       <div class="list_area_3">
+       </div>
+       
+       </tbody>
+   </table>
+
+   <h3>
+    支票账户
+ </h3>
+   
+    总数：<b class="total_cnt_checking"></b>
+   <table class="table table-hover table-bordered" >
+      <tbody>
+       <!-- BEGIN list -->
+       <div class="list_area_4">
+       </div>
+       
+       </tbody>
+   </table>
+
+         <!-- 模态框示例（Modal） -->
+         <!-- <form method="post" class="form-horizontal" role="form" id="form_data" onsubmit="return add_info()" style="margin: 20px;"> -->
+         <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+             <div class="modal-dialog">
+                 <div class="modal-content">
+                     <div class="modal-header">
+                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                             &times;
+                         </button>
+                         <h4 class="modal-title" id="myModalLabel">
+                             账户信息
+                         </h4>
+                     </div>
+                     <div class="modal-body">
+                         <form class="form-horizontal" role="form">
+                             <div class="form-group">
+                                 <label for="user_id" class="col-sm-3 control-label">账户ID</label>
+                                 <div class="col-sm-9">
+                                     <input type="text" class="form-control" id="add_client_id" name="user_id" value=""
+                                            placeholder="账户ID    ">
+                                 </div>
+                             </div>
+                            
+                             <div class="form-group">
+                                 <label for="lastname" class="col-sm-3 control-label">所属银行</label>
+                                 <div class="col-sm-9">
+                                     <input type="text" class="form-control" name="user_name" value="" id="add_client_name"
+                                            placeholder="银行    ">
+                                 </div>
+                             </div>
+                              <div class="form-group">
+                                    <label for="lastname" class="col-sm-3 control-label">账户存款</label>
+                                    <div class="col-sm-9">
+                                       <input type="text" class="form-control" name="address" value="" id="add_client_tel"
+                                             placeholder="存款    ">
+                                    </div>
+                              </div>
+                              <div class="form-group">
+                                    <label for="lastname" class="col-sm-3 control-label">开户时间</label>
+                                    <div class="col-sm-9">
+                                       <input type="text" class="form-control" name="address" value="" id="add_client_date"
+                                             placeholder="开户时间    ">
+                                    </div>
+                              </div>
+     
+                             <div class="form-group">
+                                 <label for="lastname" class="col-sm-3 control-label">关联客户ID</label>
+                                 <div class="col-sm-9">
+                                     <input type="text" class="form-control" name="address" value="" id="add_client_addr"
+                                            placeholder="客户ID    ">
+                                 </div>
+                             </div>
+                             <div class="form-group">
+                                 <label for="lastname" class="col-sm-3 control-label">账户类型</label>
+                                 <div class="col-sm-9">
+                                 <select class="form-select" id="add_client_type"  data-maxwidth="500" data-width="500px" >
+                                    <option selected>账户类型</option>
+                                    <option value="saving">储蓄账户</option>
+                                    <option value="checking">支票账户</option>
+                                 </select>
+                                 </div>
+                              </div>
+     
+                             <div class="form-group">
+                                 <label for="lastname" class="col-sm-3 control-label">欠款</label>
+                                 <div class="col-sm-9">
+                                     <input type="text" class="form-control" name="address" value="" id="add_contact_name"
+                                            placeholder="欠款    ">
+                                 </div>
+                             </div>
+                             <b>
+
+                             </b>
+                             <div class="form-group">
+                                 <label for="lastname" class="col-sm-3 control-label">利率</label>
+                                 <div class="col-sm-9">
+                                     <input type="text" class="form-control" name="address" value="" id="add_contact_email"
+                                            placeholder="利率    ">
+                                 </div>
+                             </div>
+     
+                             <div class="form-group">
+                                 <label for="lastname" class="col-sm-3 control-label">币种</label>
+                                 <div class="col-sm-9">
+                                     <input type="text" class="form-control" name="address" value="" id="add_contact_tel"
+                                            placeholder="币种    ">
+                                 </div>
+                             </div>
+                         </form>
+                     </div>
+                     <div class="modal-footer">
+                         <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                         </button>
+                         <button type="submit" class="btn btn-primary" onclick="return add_info();">
+                             提交
+                         </button><span id="tip"> </span>
+                     </div>
+                 </div><!-- /.modal-content -->
+             </div><!-- /.modal -->
+         </div>
+         <!-- </form> -->
+     
+         <!-- 模态框示例（Modal） -->
+         <!-- <form method="post" class="form-horizontal" role="form" id="form_data" onsubmit="return add_info()" style="margin: 20px;"> -->
+             <div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                 <div class="modal-dialog">
+                     <div class="modal-content">
+                         <div class="modal-header">
+                             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                 &times;
+                             </button>
+                             <h4 class="modal-title" id="myModalLabel">
+                                 账户信息
+                             </h4>
+                         </div>
+                         <div class="modal-body">
+                            <form class="form-horizontal" role="form">
+                                <div class="form-group">
+                                    <label for="user_id" class="col-sm-3 control-label">账户ID</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" id="edit_client_id" name="user_id" value=""
+                                               placeholder="账户ID    ">
+                                    </div>
+                                </div>
+                               
+                                <div class="form-group">
+                                    <label for="lastname" class="col-sm-3 control-label">所属银行</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="user_name" value="" id="edit_client_name"
+                                               placeholder="银行    ">
+                                    </div>
+                                </div>
+                                 <div class="form-group">
+                                       <label for="lastname" class="col-sm-3 control-label">账户存款</label>
+                                       <div class="col-sm-9">
+                                          <input type="text" class="form-control" name="address" value="" id="edit_client_tel"
+                                                placeholder="存款    ">
+                                       </div>
+                                 </div>
+                                 <div class="form-group">
+                                       <label for="lastname" class="col-sm-3 control-label">开户时间</label>
+                                       <div class="col-sm-9">
+                                          <input type="text" class="form-control" name="address" value="" id="edit_client_date"
+                                                placeholder="开户时间    ">
+                                       </div>
+                                 </div>
+        
+                                <div class="form-group">
+                                    <label for="lastname" class="col-sm-3 control-label">关联客户ID</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="address" value="" id="edit_client_addr"
+                                               placeholder="客户ID    ">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lastname" class="col-sm-3 control-label">账户类型</label>
+                                    <div class="col-sm-9">
+                                    <select class="form-select" id="edit_client_type"  data-maxwidth="500" data-width="500px" >
+                                       <option selected>账户类型</option>
+                                       <option value="saving">储蓄账户</option>
+                                       <option value="checking">支票账户</option>
+                                    </select>
+                                    </div>
+                                 </div>
+        
+                                <div class="form-group">
+                                    <label for="lastname" class="col-sm-3 control-label">欠款</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="address" value="" id="edit_contact_name"
+                                               placeholder="欠款    ">
+                                    </div>
+                                </div>
+                                <b>
+   
+                                </b>
+                                <div class="form-group">
+                                    <label for="lastname" class="col-sm-3 control-label">利率</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="address" value="" id="edit_contact_email"
+                                               placeholder="利率    ">
+                                    </div>
+                                </div>
+        
+                                <div class="form-group">
+                                    <label for="lastname" class="col-sm-3 control-label">币种</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" name="address" value="" id="edit_contact_tel"
+                                               placeholder="币种    ">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                         <div class="modal-footer">
+                             <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                             </button>
+                             <button type="submit" class="btn btn-primary" onclick="return edit_info();">
+                                 提交
+                             </button><span id="tip2"> </span>
+                         </div>
+                     </div><!-- /.modal-content -->
+                 </div><!-- /.modal -->
+             </div>
+     </div>
+     </body>
+     </html>
